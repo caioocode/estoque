@@ -1,0 +1,4 @@
+fastapi
+pydantic
+uvicorn #app.main:app --reload
+streamlit #run app.py

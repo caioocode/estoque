@@ -1,3 +1,74 @@
 implementações futuras: Dashboard: produtos com estoque baixo, quantidade de produtos em estoque e custo total de produtos
 estilizar: barra lateral
 
+            # Criando a estrutura HTML da tabela
+            html_table = """
+                <table style="border-collapse: collapse; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Quantidade</th>
+                            <th>Preço</th>
+                            <th>Localização</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            """
+            for produto in produtos:
+                html_table += f"""
+                <tr id="produto_{produto['id']}">
+                    <td>{produto['id']}</td>
+                    <td>{produto['nome']}</td>
+                    <td>{produto['categoria']}</td>
+                    <td>{produto['quantidade_estoque']}</td>
+                    <td>R${produto['preco']:.2f}</td>
+                    <td>{produto['localizacao_deposito']}</td>
+                    <td><button id="delete_{produto['id']}">Remover</button></td>
+                </tr>
+                """
+            html_table += "</tbody></table>"
+
+            # Renderizando a tabela no Streamlit
+            st.markdown(html_table, unsafe_allow_html=True)
+
+            # Botão para remover o produto
+            if st.button(f"Remover Produto {produto['id']}", key=f"delete_{produto['id']}"):
+                    try:
+                        deletar_produto_service(produto['id'])
+                        st.success(f"Produto {produto['id']} removido com sucesso!")
+                    except Exception as e:
+                        st.error(f"Erro ao deletar produto {produto['id']}: {e}")
+            st.markdown("---")
+
+
+--------------------------------------------------------------------------
+
+    try:
+        produtos = listar_produtos_service()
+        if produtos:
+            # Cabeçalho da tabela
+            st.write(f"| ID | Nome | Categoria | Quantidade | Preço | Localização | Ação |")
+            st.write(f"|----|------|-----------|------------|-------|-------------|------|")
+
+            # Iterar pelos produtos e exibir os dados com botão de ação
+            for produto in produtos:
+                col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+                col1.write(produto["id"])
+                col2.write(produto["nome"])
+                col3.write(produto["categoria"])
+                col4.write(produto["quantidade_estoque"])
+                col5.write(f"R${produto['preco']:.2f}")
+                col6.write(produto["localizacao_deposito"])
+                if col7.button("Remover", key=f"remover_{produto['id']}"):
+                    try:
+                        deletar_produto_service(produto["id"])
+                        st.success(f"Produto {produto['id']} removido com sucesso!")
+                    except Exception as e:
+                        st.error(f"Erro ao remover produto {produto['id']}: {e}")
+        else:
+            st.info("Nenhum produto encontrado.")
+    except Exception as e:
+        st.error(f"Erro ao listar produtos: {e}")

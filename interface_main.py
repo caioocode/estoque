@@ -27,87 +27,36 @@ menu = st.sidebar.selectbox("Menu", ["Listar Produtos", "Adicionar Produto", "De
 
 
 # Listar produtos
-# Listar produtos
 if menu == "Listar Produtos":
     st.header("Lista de Produtos")
+
+    
     try:
         produtos = listar_produtos_service()
         if produtos:
-            # Criando a estrutura HTML da tabela
-            html_table = """
-                <table style="border-collapse: collapse; width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Categoria</th>
-                            <th>Quantidade</th>
-                            <th>Preço</th>
-                            <th>Localização</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            """
+            # Cabeçalho da tabela
+            st.write(f"| ID|Nome | Categoria | Quantidade | Preço | Localização | Ação |")
+            
+
+            # Iterar pelos produtos e exibir os dados com botão de ação
             for produto in produtos:
-                html_table += f"""
-                <tr id="produto_{produto['id']}">
-                    <td>{produto['id']}</td>
-                    <td>{produto['nome']}</td>
-                    <td>{produto['categoria']}</td>
-                    <td>{produto['quantidade_estoque']}</td>
-                    <td>R${produto['preco']:.2f}</td>
-                    <td>{produto['localizacao_deposito']}</td>
-                    <td><button id="delete_{produto['id']}">Remover</button></td>
-                </tr>
-                """
-            html_table += "</tbody></table>"
-
-            # Renderizando a tabela no Streamlit
-            st.markdown(html_table, unsafe_allow_html=True)
-
-            # Adicionando JavaScript para controlar os cliques nos botões
-            st.markdown("""
-            <script>
-                // Função para remover um produto
-                async function removerProduto(produtoId) {
-                    try {
-                        // Chamando a API para remover o produto
-                        const response = await fetch(`http://localhost:8000/produtos/${produtoId}`, {
-                            method: 'DELETE',
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            // Remover o produto da tabela
-                            document.getElementById('produto_' + produtoId).remove();
-                            alert(data.message); // Exibe a mensagem de sucesso
-                        } else {
-                            const data = await response.json();
-                            alert('Erro ao remover produto: ' + data.detail);
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        alert('Erro ao conectar ao servidor');
-                    }
-                }
-
-                // Adicionando event listeners para todos os botões de remover
-                const botoesRemover = document.querySelectorAll('button[id^="delete_"]');
-                botoesRemover.forEach(botao => {
-                    botao.addEventListener('click', () => {
-                        const produtoId = botao.id.replace('delete_', '');
-                        removerProduto(produtoId);
-                    });
-                });
-            </script>
-            """, unsafe_allow_html=True)
-
+                col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+                col1.write(produto["id"])
+                col2.write(produto["nome"])
+                col3.write(produto["categoria"])
+                col4.write(produto["quantidade_estoque"])
+                col5.write(f"R${produto['preco']:.2f}")
+                col6.write(produto["localizacao_deposito"])
+                if col7.button("Remover", key=f"remover_{produto['id']}"):
+                    try:
+                        deletar_produto_service(produto["id"])
+                        st.success(f"Produto {produto['id']} removido com sucesso!")
+                    except Exception as e:
+                        st.error(f"Erro ao remover produto {produto['id']}: {e}")
         else:
             st.info("Nenhum produto encontrado.")
     except Exception as e:
         st.error(f"Erro ao listar produtos: {e}")
-
     
 
 # Adicionar produto
